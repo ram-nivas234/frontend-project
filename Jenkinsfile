@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_SERVER = 'sonar'
+        SONARQUBE_SERVER = 'SonarQubeServer'
         SONAR_PROJECT_KEY = 'frontend-project'
         SONAR_PROJECT_NAME = 'Frontend Project'
         SONAR_PROJECT_VERSION = '1.0'
