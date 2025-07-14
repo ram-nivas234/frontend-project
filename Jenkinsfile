@@ -2,7 +2,9 @@ pipeline {
     agent any
 
     environment {
-        SONAR_HOME = tool "SonarQubeServer"
+        SONAR_PROJECT_KEY = 'frontend-project'
+        SONAR_PROJECT_NAME = 'Frontend Project'
+        SONAR_PROJECT_VERSION = '1.0'
         DOCKER_IMAGE = 'ramnivas234/frontend-project'
         DOCKER_TAG = 'latest'
         DOCKERHUB_CREDENTIALS_ID = 'dockerhub'  // Jenkins credentials ID
