@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        SONAR_HOME = tool "Sonar"
         SONAR_PROJECT_KEY = 'frontend-project'
         SONAR_PROJECT_NAME = 'Frontend Project'
         SONAR_PROJECT_VERSION = '1.0'
@@ -18,9 +19,6 @@ pipeline {
         }
 
 stage('SonarQube Analysis') {
-    tools {
-        SonarQubeServer
-    }
     steps {
         withSonarQubeEnv('SonarQubeServer') {
             sh '''
