@@ -17,21 +17,25 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQubeServer') {
-                    sh '''
-                        sonar-scanner \
-                          -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                          -Dsonar.projectName=${SONAR_PROJECT_NAME} \
-                          -Dsonar.projectVersion=${SONAR_PROJECT_VERSION} \
-                          -Dsonar.sources=. \
-                          -Dsonar.language=js \
-                          -Dsonar.sourceEncoding=UTF-8
-                    '''
-                }
-            }
+stage('SonarQube Analysis') {
+    tools {
+        SonarRunner 'SonarQubeServer'
+    }
+    steps {
+        withSonarQubeEnv('SonarQubeServer') {
+            sh '''
+                sonar-scanner \
+                  -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                  -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                  -Dsonar.projectVersion=${SONAR_PROJECT_VERSION} \
+                  -Dsonar.sources=. \
+                  -Dsonar.language=js \
+                  -Dsonar.sourceEncoding=UTF-8
+            '''
         }
+    }
+}
+
 
         stage('OWASP Dependency Check') {
             steps {
