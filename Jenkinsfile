@@ -22,7 +22,7 @@ pipeline {
                 sonarQubeScanner 'SonarQubeServer'
             }
             steps {
-                withSonarQubeEnv("${SONARQUBE_SERVER}") {
+                withSonarQubeEnv("${SonarQubeServer}") {
                     sh '''
                         sonar-scanner \
                           -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
