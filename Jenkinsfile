@@ -1,82 +1,47 @@
 pipeline {
     agent any
 
-    environment {
-        SONAR_HOME = tool "Sonar"
-        SONAR_PROJECT_KEY = 'frontend-project'
-        SONAR_PROJECT_NAME = 'Frontend Project'
-        SONAR_PROJECT_VERSION = '1.0'
-        DOCKER_IMAGE = 'ramnivas234/frontend-project'
-        DOCKER_TAG = 'latest'
-        DOCKERHUB_CREDENTIALS_ID = 'dockerhub'  // Jenkins credentials ID
-    }
-
     stages {
-        stage('Checkout') {
+        stage('Git Checkout') {
             steps {
-                git url: 'https://github.com/ram-nivas234/frontend-project.git', branch: 'main'
+                echo 'Cloning the code'
+                git branch: 'main', url: 'https://github.com/ram-nivas234/frontend-project.git'
+            }
+        }
+        stage('SonarQube Scan') {
+            steps {
+                withSonarQubeEnv("sonarqube") {
+                    sh "${tool('sonarqube')}/bin/sonar-scanner"
+                }
+            }
+        }
+        stage('Quality Gate Check') {
+            steps {
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+        stage('Docker Build') {
+            steps {
+                echo 'Building the Docker image'
+                sh 'whoami'
+                sh 'docker build -t ramnivas23/frontend-project .'
             }
         }
 
-stage('SonarQube Analysis') {
-    steps {
-        withSonarQubeEnv('SonarQubeServer') {
-            sh '''
-                sonar-scanner \
-                  -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                  -Dsonar.projectName=${SONAR_PROJECT_NAME} \
-                  -Dsonar.projectVersion=${SONAR_PROJECT_VERSION} \
-                  -Dsonar.sources=. \
-                  -Dsonar.language=js \
-                  -Dsonar.sourceEncoding=UTF-8
-            '''
-        }
-    }
-}
-
-
-        stage('OWASP Dependency Check') {
+        stage('Docker Login') {
             steps {
-                sh '''
-                    mkdir -p reports
-                    dependency-check.sh \
-                      --project "Frontend Project" \
-                      --scan . \
-                      --out ./reports \
-                      --format HTML
-                '''
-            }
-        }
-
-        stage('Trivy Scan') {
-            steps {
-                sh '''
-                    trivy fs . --exit-code 0 --format table --output trivy-report.txt || true
-                '''
-            }
-        }
-
-        stage('Archive Reports') {
-            steps {
-                archiveArtifacts artifacts: '**/reports/**, trivy-report.txt', allowEmptyArchive: true
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    dockerImage = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                 }
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage('Docker Push') {
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', "${DOCKERHUB_CREDENTIALS_ID}") {
-                        dockerImage.push()
-                    }
-                }
+                echo 'Pushing the Docker image to Docker Hub'
+                sh 'docker push ramnivas23/frontend-project'
             }
         }
     }
