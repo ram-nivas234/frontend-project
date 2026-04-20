@@ -3,10 +3,10 @@ name: Release
   push:
     branches:
       - master
-      - next
+      - main
       - beta
       - alpha
-      - "*.x"
+      - rc
 permissions:
   contents: read # for checkout
 jobs:
@@ -32,4 +32,3 @@ jobs:
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.SEMANTIC_RELEASE_BOT_NPM_TOKEN }}
